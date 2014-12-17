@@ -7,16 +7,16 @@
 #include <ext.hpp>
 #include "shaders.h"
 
-//--------------------------------------------------------------------------------------
-// Глобальные переменные
-//--------------------------------------------------------------------------------------
+
 HINSTANCE               g_hInst = NULL;
 HWND                    g_hWnd = NULL;
 HGLRC					hRC = NULL;
 
-//--------------------------------------------------------------------------------------
-// Объявления функций
-//--------------------------------------------------------------------------------------
+bool keys[256];
+float dorbit = 0.0f;
+bool doAnimation = false;
+
+//Functions declaration
 HRESULT InitWindow( HINSTANCE hInstance, int nCmdShow );
 HRESULT InitCompatibleContext();
 HRESULT InitContext();
@@ -26,10 +26,7 @@ LRESULT CALLBACK    WndProc( HWND, UINT, WPARAM, LPARAM );
 void Render();
 
 
-//--------------------------------------------------------------------------------------
-// Главная функция программы. Происходят все инициализации, и затем выполняется
-// цикл обработки сообщений
-//--------------------------------------------------------------------------------------
+//Main Program's function
 int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow )
 {
     UNREFERENCED_PARAMETER( hPrevInstance );
@@ -49,7 +46,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 	InitGeometry();
 	
-    // Цикл обработки сообщений
+    //Messages' processing loop
     MSG msg = {0};
     while( WM_QUIT != msg.message )
     {
@@ -61,6 +58,22 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
         else
         {
             Render();
+
+			if(!keys[VK_LEFT])								
+				dorbit = 0.0f;
+
+			if(!keys[VK_RIGHT])								
+				dorbit = 0.0f;								
+			
+			if(keys[VK_RIGHT])								
+				dorbit = 0.01f;								
+
+			if(keys[VK_LEFT])								
+				dorbit = -0.01f;
+
+			if(keys[VK_SPACE])
+				doAnimation = true;
+
         }
     }
 
@@ -70,9 +83,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 }
 
 
-//--------------------------------------------------------------------------------------
-// Создание окна
-//--------------------------------------------------------------------------------------
+//Window creation
 HRESULT InitWindow( HINSTANCE hInstance, int nCmdShow )
 {
     // Register class
@@ -108,9 +119,7 @@ HRESULT InitWindow( HINSTANCE hInstance, int nCmdShow )
 }
 
 
-//--------------------------------------------------------------------------------------
-// Обработка сообщений Windows
-//--------------------------------------------------------------------------------------
+//Processng of Windows messages 
 LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
 {
     PAINTSTRUCT ps;
@@ -126,6 +135,18 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
         case WM_DESTROY:
             PostQuitMessage( 0 );
             break;
+
+		case WM_KEYDOWN:										
+		{
+			keys[wParam] = TRUE;								
+			return 0;											
+		}
+
+		case WM_KEYUP:											
+		{
+			keys[wParam] = FALSE;								
+			return 0;											
+		}
 
         default:
             return DefWindowProc( hWnd, message, wParam, lParam );
@@ -157,9 +178,7 @@ LRESULT CALLBACK WndProc2( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
     return 0;
 }
 
-//--------------------------------------------------------------------------------------
-// Инициализация OpenGL совместимого контекста
-//--------------------------------------------------------------------------------------
+//OpenGL Compatible Context Initialization
 HRESULT InitCompatibleContext()
 {
 	int iMajorVersion=0;
@@ -167,16 +186,16 @@ HRESULT InitCompatibleContext()
 
 	HDC hDC = GetDC(g_hWnd);
 
-	// Устанавливаем параметры поверхности контекста
+	// Setting the parameters of context's surface
 	
 	PIXELFORMATDESCRIPTOR pfd;
 	memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
 	pfd.nSize		= sizeof(PIXELFORMATDESCRIPTOR);
 	pfd.nVersion   = 1;
 	pfd.dwFlags    = PFD_DOUBLEBUFFER | PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW;
-	pfd.iPixelType = PFD_TYPE_RGBA; //тип пикселей
-	pfd.cColorBits = 32;		    //тип цвета
-	pfd.cDepthBits = 24;            //тип z-буфера
+	pfd.iPixelType = PFD_TYPE_RGBA; //pixels type
+	pfd.cColorBits = 32;		    //color type
+	pfd.cDepthBits = 24;            //z-buffer type
 	pfd.iLayerType = PFD_MAIN_PLANE;
  
 	int iPixelFormat = ChoosePixelFormat(hDC, &pfd);
@@ -184,7 +203,7 @@ HRESULT InitCompatibleContext()
 
 	if(!SetPixelFormat(hDC, iPixelFormat, &pfd)) return false;
 
-	// Создаем совместимый контекст
+	// Creating of compatible context
 
 	HGLRC hRCCompatible = wglCreateContext(hDC);
 	wglMakeCurrent(hDC, hRCCompatible);
@@ -203,9 +222,7 @@ HRESULT InitCompatibleContext()
 
 	return bResult;
 }
-//--------------------------------------------------------------------------------------
-// Инициализация OpenGL основного контекста
-//--------------------------------------------------------------------------------------
+//OpenGL Main context Initialization
 HRESULT InitContext()
 {
 	int iMajorVersion=4;
@@ -218,7 +235,7 @@ HRESULT InitContext()
 
 	bool bError=false;
 	
-	// Устанавливаем параметры поверхности контекста
+	// Setting the parameters of context's surface
 
 	if(WGLEW_ARB_create_context && WGLEW_ARB_pixel_format)
 	{
@@ -227,9 +244,9 @@ HRESULT InitContext()
 			WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
 			WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
 			WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
-			WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB, //тип пикселей
-			WGL_COLOR_BITS_ARB, 32,			       //тип цвета
-			WGL_DEPTH_BITS_ARB, 24,                //тип z-буфера
+			WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB, //pixels type
+			WGL_COLOR_BITS_ARB, 32,			       //color type
+			WGL_DEPTH_BITS_ARB, 24,                //z-buffer type
 			WGL_STENCIL_BITS_ARB, 8,
 			0 // End of attributes list
 		};
@@ -247,7 +264,7 @@ HRESULT InitContext()
 		// PFD seems to be only redundant parameter now
 		//if(!SetPixelFormat(hDC, iPixelFormat, &pfd))return false; 
     
-		// Создаем основной контекст
+		// Creating of main context
 
 		hRC = wglCreateContextAttribsARB(hDC, 0, iContextAttribs);
 		// If everything went OK
@@ -271,21 +288,16 @@ HRESULT InitContext()
 }
 
 
-
-//--------------------------------------------------------------------------------------
-// Определение переменных для процедруной генерации
-//--------------------------------------------------------------------------------------
+//Definition of variables for procedural generation
 const int u=32;
 const int v=32;
-//--------------------------------------------------------------------------------------
+
 float hmap[u][v];
-//--------------------------------------------------------------------------------------
-// Значение полного количества индексов потребуется для рендера буфера
-//--------------------------------------------------------------------------------------
+
+//Value of the total number of indexes (for render buffer)
 const int IndicesCount=(u-1)*(v-1)*6;
-//--------------------------------------------------------------------------------------
-// Заполняем карту вершин произвольной функцией
-//--------------------------------------------------------------------------------------
+
+//Filling the vertices' map  by arbitrary function
 void GenerateHMap()
 {
 	for (int i=0; i<u; i++)
@@ -299,17 +311,14 @@ void GenerateHMap()
 		hmap[i][j]=h;
 	}
 }
-//--------------------------------------------------------------------------------------
-// Процедурная генерация
-//--------------------------------------------------------------------------------------
+
 UINT uiVBO[5]; 
 UINT uiVAO[1]; 
-//--------------------------------------------------------------------------------------
-// Процедурная генерация
-//--------------------------------------------------------------------------------------
+
+//Geometry procedural generation
 void GenerateLandscape()
 {
-	// Вершинный буфер
+	// Vertex buffer
 	struct VERTEX{
 		glm::vec3 pos1[u*v];
 		glm::vec3 pos2[u*v];
@@ -319,13 +328,13 @@ void GenerateLandscape()
 		float h[u*v];
 	} vertices;
 
-	// Индексный буфер
+	// Index buffer
 	unsigned int indices[IndicesCount];
 
-	// Генерация карты высот
+	// Heightmap Generation
 	GenerateHMap();
 
-	// Генерация сетки вершин для вершинного буфера
+	// Generation of vertices' grid for vertex buffer
 	for (int i=0; i<u; i++)
 	for (int j=0; j<v; j++)
 	{
@@ -344,7 +353,7 @@ void GenerateLandscape()
 		vertices.posDiffer[i] = vertices.pos2[i] - vertices.pos1[i];
 	}
 
-	//Генерация  индексного буфера
+	//Index buffer generatioin
 	for (int i=0; i<(u-1); i++)
 	for (int j=0; j<(v-1); j++)
 	{
@@ -358,14 +367,14 @@ void GenerateLandscape()
 		indices[indexa*6+4]=indexb+u;
 		indices[indexa*6+5]=indexb+u+1;
 	}
-   //определяем количество вершин и количество индексов
+   //Determining of vertices and indices numbers
    int verticesCount=u*v;
    int indicesCount=IndicesCount;
 
-   glGenVertexArrays(1, uiVAO); // Обобщенный буфер
-   glGenBuffers(5, uiVBO);		// Три буфера для position, normal, texcoord и один иднексный буфер
+   glGenVertexArrays(1, uiVAO); // Generalized buffer
+   glGenBuffers(5, uiVBO);		// Three buffers for position, normal, texcoord and one index buffer
 
-   // Копирование данных буферов в обобщенный буфер
+   //Copying of data buffers to the generalized buffer
    glBindVertexArray(uiVAO[0]); 
 
    glBindBufferARB(GL_ARRAY_BUFFER, uiVBO[0]); 
@@ -388,22 +397,19 @@ void GenerateLandscape()
    glEnableVertexAttribArrayARB(3); 
    glVertexAttribPointerARB(3, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-   // Копирование индексного буфера
+   //Copying of Index buffer
    glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, uiVBO[4]); 
    glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, indicesCount*sizeof(unsigned int), indices, GL_STATIC_DRAW); 
 }
-//--------------------------------------------------------------------------------------
-// Инициализация геометрии
-//--------------------------------------------------------------------------------------
+
+//Shaders setting
 CShader shVertex, shFragment; 
 CShaderProgram spMain; 
 
-//--------------------------------------------------------------------------------------
-// Инициализация геометрии
-//--------------------------------------------------------------------------------------
+//Geometry Initialization
 void InitGeometry() 
 { 
-   // Создаем процедурно сгенерированный объект
+   //Creation of procedurally generated object
    GenerateLandscape();
 
    // Load shaders and create shader program
@@ -419,53 +425,54 @@ void InitGeometry()
 
    wglSwapIntervalEXT(1);
 
-   //Включаем Zбуфер
+   //Enable Z-Buffer
    glEnable(GL_DEPTH_TEST);
    glClearDepth(1.0f);
 
 }   
-//--------------------------------------------------------------------------------------
+
 float orbit=0.0f;
 float dtime = 0.0f;
 float ptime = 0.005f;
 
-//--------------------------------------------------------------------------------------
-// Рендер
-//--------------------------------------------------------------------------------------
+//Renderer
 void Render()
 {
-    //
-    // Очистка рендер-таргета
-    // 
+    //Render-target clean-up 
 	HDC hDC = GetDC(g_hWnd);
 
-	// Очистка поверхности цветом
+	//Background color
 	glClearColor(0.0f, 0.9f, 0.5f, 1.0f);
 	glClearDepth(1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-    // Изменение позиции камеры на орбите
-	float radius=4.0f;	orbit+=0.005f;
+    //Camera rotation orbit radius
+	float radius=5.0f;	orbit+=dorbit;
 
-	// Инициализация орбитальных данных координат камеры
-    glm::vec3   Eye( sin(orbit)*radius, 1.0f, -0.5f+cos(orbit)*radius*1.5f );
+    glm::vec3   Eye( sin(orbit)*radius, 1.0f, cos(orbit)*radius );
 
-	//Установка матриц для камеры
+	//Setting matrices for Camera
 	glm::mat4	mWorld;
 	glm::mat4	mView;
 	glm::mat4	mProjection;
 	mWorld=glm::mat4(1.0f,0,0,0, 0,1.0f,0,0, 0,0,1.0f,0, 0,0,0,1.0f);
 
 	//Setting time variable (for plane morphing)
-	if (dtime > 1.0f || dtime < 0.0f) ptime *= -1.0f;
-	dtime += ptime;
+	if(doAnimation) dtime += ptime;
+	
+	if (dtime > 1.0f || dtime < 0.0f) 
+	{
+		dtime -= ptime; 	
+		ptime *= -1.0f;
+		doAnimation = false;
+	}
 
 	mWorld=		glm::translate(0,0,0);
 	mView=		glm::lookAt(Eye,glm::vec3(0,0,0),glm::vec3(0.0f,1.0f,0.0f));
 	mProjection=glm::perspectiveFov(90.0f,533.0f,400.0f,0.001f,1000.0f);
 
-	//Установка констант шейдера матриц
+	//Matrices shader constants
 	int iWorld=	glGetUniformLocation(spMain.getProgramID(),"mWorld");
 	int iView=	glGetUniformLocation(spMain.getProgramID(),"mView");
 	int iProjection=	glGetUniformLocation(spMain.getProgramID(),"mProjection");
@@ -477,7 +484,7 @@ void Render()
 	glUniform1f(iTime, dtime);
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	// Рендер
+	// Renderer
 	glBindVertexArray(uiVAO[0]);
 	mWorld=		glm::translate(0.0f,0.0f,0.0f);
 	glUniformMatrix4fv(iWorld,1,GL_FALSE,glm::value_ptr(mWorld));
@@ -487,9 +494,7 @@ void Render()
 }
 
 
-//--------------------------------------------------------------------------------------
-// Очистка
-//--------------------------------------------------------------------------------------
+//Clean Up
 void CleanupContext()
 {
 	spMain.deleteProgram();

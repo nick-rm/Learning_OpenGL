@@ -26,8 +26,6 @@ bool CShader::loadShader(char * sFile, int a_iType)
 	FILE* fp = fopen(sFile, "rt");
 	if(!fp)return false;
 
-	//Загрузка построчно шейдера из файла в массив 
-
 	GLchar * strings[128];
 	int stringsI=0;
 
