@@ -1,0 +1,35 @@
+﻿Build started 17.12.2014 15:12:18.
+     1>Project "D:\Training VS Projects\Learning OpenGL\Learning_OpenGL\Task1_Draft\Task1_Draft.vcxproj" on node 2 (rebuild target(s)).
+     1>_PrepareForClean:
+         Deleting file "Debug\Task1_Draft.lastbuildstate".
+       InitializeBuildStatus:
+         Creating "Debug\Task1_Draft.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt shaders.cpp Task1.cpp
+         Task1.cpp
+     1>d:\training vs projects\learning opengl\learning_opengl\glm\glm\gtx\string_cast.inl(30): warning C4996: 'vsprintf': This function or variable may be unsafe. Consider using vsprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(371) : see declaration of 'vsprintf'
+     1>d:\training vs projects\learning opengl\learning_opengl\task1_draft\task1.cpp(281): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(371) : see declaration of 'sprintf'
+     1>d:\training vs projects\learning opengl\learning_opengl\task1_draft\task1.cpp(282): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(371) : see declaration of 'sprintf'
+         shaders.cpp
+     1>d:\training vs projects\learning opengl\learning_opengl\task1_draft\shaders.cpp(26): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(234) : see declaration of 'fopen'
+     1>d:\training vs projects\learning opengl\learning_opengl\task1_draft\shaders.cpp(36): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+         Generating Code...
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\Training VS Projects\Learning OpenGL\Learning_OpenGL\Task1_Draft\Debug\Task1_Draft.exe" /NOLOGO glew32.lib opengl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\Task1_Draft.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"D:\Training VS Projects\Learning OpenGL\Learning_OpenGL\Task1_Draft\Debug\Task1_Draft.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\Training VS Projects\Learning OpenGL\Learning_OpenGL\Task1_Draft\Debug\Task1_Draft.lib" /MACHINE:X86 Debug\shaders.obj
+         Debug\Task1.obj
+         Task1_Draft.vcxproj -> D:\Training VS Projects\Learning OpenGL\Learning_OpenGL\Task1_Draft\Debug\Task1_Draft.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"D:\Training VS Projects\Learning OpenGL\Learning_OpenGL\Task1_Draft\Debug\Task1_Draft.exe;#1" /manifest Debug\Task1_Draft.exe.intermediate.manifest
+       FinalizeBuildStatus:
+         Deleting file "Debug\Task1_Draft.unsuccessfulbuild".
+         Touching "Debug\Task1_Draft.lastbuildstate".
+     1>Done Building Project "D:\Training VS Projects\Learning OpenGL\Learning_OpenGL\Task1_Draft\Task1_Draft.vcxproj" (rebuild target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:04.32
