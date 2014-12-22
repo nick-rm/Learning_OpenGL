@@ -1,0 +1,37 @@
+﻿Build started 22.12.2014 13:08:59.
+     1>Project "D:\Training VS Projects\Learning_OpenGL2\Task1\Task1.vcxproj" on node 2 (rebuild target(s)).
+     1>_PrepareForClean:
+         Deleting file "Debug\Task1.lastbuildstate".
+       InitializeBuildStatus:
+         Creating "Debug\Task1.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt meshobj.cpp shaders.cpp Task1.cpp
+         Task1.cpp
+     1>d:\training vs projects\learning_opengl2\glm\glm\gtx\string_cast.inl(30): warning C4996: 'vsprintf': This function or variable may be unsafe. Consider using vsprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(371) : see declaration of 'vsprintf'
+     1>d:\training vs projects\learning_opengl2\task1\task1.cpp(289): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(371) : see declaration of 'sprintf'
+     1>d:\training vs projects\learning_opengl2\task1\task1.cpp(290): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(371) : see declaration of 'sprintf'
+         shaders.cpp
+     1>d:\training vs projects\learning_opengl2\task1\shaders.cpp(15): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(234) : see declaration of 'fopen'
+     1>d:\training vs projects\learning_opengl2\task1\shaders.cpp(27): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+         meshobj.cpp
+         Generating Code...
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\Training VS Projects\Learning_OpenGL2\Task1\Debug\Task1.exe" /NOLOGO glew32.lib opengl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\Task1.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"D:\Training VS Projects\Learning_OpenGL2\Task1\Debug\Task1.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\Training VS Projects\Learning_OpenGL2\Task1\Debug\Task1.lib" /MACHINE:X86 Debug\meshobj.obj
+         Debug\shaders.obj
+         Debug\Task1.obj
+         Task1.vcxproj -> D:\Training VS Projects\Learning_OpenGL2\Task1\Debug\Task1.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"D:\Training VS Projects\Learning_OpenGL2\Task1\Debug\Task1.exe;#1" /manifest Debug\Task1.exe.intermediate.manifest
+       FinalizeBuildStatus:
+         Deleting file "Debug\Task1.unsuccessfulbuild".
+         Touching "Debug\Task1.lastbuildstate".
+     1>Done Building Project "D:\Training VS Projects\Learning_OpenGL2\Task1\Task1.vcxproj" (rebuild target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:05.20
