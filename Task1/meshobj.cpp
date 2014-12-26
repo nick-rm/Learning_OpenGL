@@ -25,7 +25,7 @@ struct GBuffer {
     int    indicesI;
 } buffer1, buffer2;
 
-MeshFromObj::MeshFromObj(char * fname1, char * fname2)
+MeshFromObj::MeshFromObj(wchar_t * fname1, wchar_t * fname2)
 {
 	meshloaded=false;
 	ZeroMemory(&buffer1,sizeof(buffer1));
@@ -118,7 +118,7 @@ void AddIndex(int index, GBuffer & buffer)
 }
 
 //Loading Geometry data from .obj file
-void MeshFromObj::LoadMeshFromObj(char * fname, GBuffer & buffer)
+void MeshFromObj::LoadMeshFromObj(wchar_t * fname, GBuffer & buffer)
 {
     buffer.verticesI=0;
     buffer.indicesI=0;

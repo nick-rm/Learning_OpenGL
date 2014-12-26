@@ -9,7 +9,7 @@ struct GBuffer;
 class MeshFromObj
 {
 	public:
-	MeshFromObj(char * fname1, char * fname2);
+	MeshFromObj(wchar_t * fname1, wchar_t * fname2);
 	void Draw();
 	~MeshFromObj();
 
@@ -19,6 +19,6 @@ class MeshFromObj
 	int						    verticesCount;
 	int						    indicesCount;
 	bool						meshloaded;
-	void LoadMeshFromObj(char * fname, GBuffer & buffer);
+	void LoadMeshFromObj(wchar_t * fname, GBuffer & buffer);
 	bool CreateVertexAndIndexBuffers(GBuffer & buffer1, GBuffer & buffer2);
 };

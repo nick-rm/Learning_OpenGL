@@ -3,7 +3,7 @@
 //Class: CShader
 //Wraps OpenGL shader loading and compiling.
 
-class CShader
+class ShaderClass
 {
 public:
 	bool loadShader(char * sFile, int a_iType);
@@ -12,7 +12,7 @@ public:
 	bool isLoaded();
 	UINT getShaderID();
 
-	CShader();
+	ShaderClass();
 
 private:
 	UINT uiShader; // ID of shader
@@ -23,20 +23,20 @@ private:
 //Class: CShaderProgram
 //Wraps OpenGL shader program
 
-class CShaderProgram
+class ShaderProgClass
 {
 public:
 	void createProgram();
 	void deleteProgram();
 
-	bool addShaderToProgram(CShader* shShader);
+	bool addShaderToProgram(ShaderClass* sShader);
 	bool linkProgram();
 
 	void useProgram();
 
 	UINT getProgramID();
 
-	CShaderProgram();
+	ShaderProgClass();
 
 private:
 	UINT uiProgram; // ID of program

@@ -17,16 +17,24 @@ MeshFromObj*			Mesh = NULL;
 
 bool keys[256];
 float dorbit = 0.0f;
+float dorbit1 = 0.0f;
 bool doAnimation = false;
+int polygonMode = GL_LINE;
+wchar_t filename[MAX_PATH]=L"";
+wchar_t filename1[MAX_PATH]=L"";
+wchar_t filename2[MAX_PATH]=L"";
+bool isLoaded1 = false;
+bool isLoaded2 = false;
 
 //Functions declaration
-HRESULT InitWindow( HINSTANCE hInstance, int nCmdShow );
-HRESULT InitCompatibleContext();
-HRESULT InitContext();
-void InitGeometry();
-void CleanupContext();
-LRESULT CALLBACK    WndProc( HWND, UINT, WPARAM, LPARAM );
+HRESULT WindowInit( HINSTANCE hInstance, int nCmdShow );
+HRESULT CompatContextInit();
+HRESULT ContextInit();
+void GeometrySet();
+void ContextClean();
+LRESULT CALLBACK WndProc( HWND, UINT, WPARAM, LPARAM );
 void Render();
+void FileName(wchar_t * fname);
 
 
 //Main Program's function
@@ -35,19 +43,18 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
     UNREFERENCED_PARAMETER( hPrevInstance );
     UNREFERENCED_PARAMETER( lpCmdLine );
 
-    if( FAILED( InitWindow( hInstance, nCmdShow ) ) )
+    if( FAILED( WindowInit( hInstance, nCmdShow ) ) )
         return 0;
 
-	if( FAILED( InitCompatibleContext() ) )
+	if( FAILED( CompatContextInit() ) )
 		return 0;
 
-	if( FAILED( InitContext() ) )
+	if( FAILED( ContextInit() ) )
     {
-        CleanupContext();
+        ContextClean();
         return 0;
     }
-
-	InitGeometry();
+		GeometrySet();
 	
     //Messages' processing loop
     MSG msg = {0};
@@ -58,10 +65,15 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
             TranslateMessage( &msg );
             DispatchMessage( &msg );
         }
+		else if (isLoaded1 && isLoaded2)
+		{
+			GeometrySet();
+			isLoaded2 = isLoaded1 = false;
+		}
         else
         {
-            Render();
-
+			Render();
+			
 			if(!keys[VK_LEFT])								
 				dorbit = 0.0f;
 
@@ -69,25 +81,37 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 				dorbit = 0.0f;								
 			
 			if(keys[VK_RIGHT])								
-				dorbit = 0.01f;								
+				dorbit = -0.01f;								
 
 			if(keys[VK_LEFT])								
-				dorbit = -0.01f;
+				dorbit = 0.01f;
+			//------------------
+			if(keys[VK_DOWN])								
+				dorbit1 += 0.01f;								
 
+			if(keys[VK_UP])								
+				dorbit1 -= 0.01f;
+			//------------------
 			if(keys[VK_SPACE])
 				doAnimation = true;
+
+			if(keys['W'])
+				polygonMode = GL_LINE;
+
+			if(keys['S'])
+				polygonMode = GL_FILL;
 
         }
     }
 
-    CleanupContext();
+    ContextClean();
 
     return ( int )msg.wParam;
 }
 
 
 //Window creation
-HRESULT InitWindow( HINSTANCE hInstance, int nCmdShow )
+HRESULT WindowInit( HINSTANCE hInstance, int nCmdShow )
 {
     // Register class
     WNDCLASSEX wcex;
@@ -118,6 +142,17 @@ HRESULT InitWindow( HINSTANCE hInstance, int nCmdShow )
 
     ShowWindow( g_hWnd, nCmdShow );
 
+	HMENU FileMenu;
+	HMENU FileSubMenu;
+	FileMenu = CreateMenu();
+	FileSubMenu = CreateMenu();
+	AppendMenu(FileMenu,MF_POPUP,(UINT_PTR)FileSubMenu,L"File");
+	AppendMenu(FileSubMenu, MF_STRING, 1, L"Open File1");
+	AppendMenu(FileSubMenu, MF_STRING, 2, L"Open File2");
+
+    AppendMenu(FileMenu, MF_STRING, 3, L"Help");
+	SetMenu(g_hWnd, FileMenu);
+
     return S_OK;
 }
 
@@ -126,6 +161,22 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 {
     PAINTSTRUCT ps;
     HDC hdc;
+
+	OPENFILENAME of;
+	wchar_t* buf;
+	HANDLE hf;
+	DWORD len,len1;
+
+	ZeroMemory(&of, sizeof(OPENFILENAME));
+	of.lStructSize=OPENFILENAME_SIZE_VERSION_400A;
+    of.hwndOwner=hWnd;
+    of.lpstrFilter=L".obj Files (*.obj)\0*.obj\0";
+    of.lpstrCustomFilter=NULL; of.nMaxCustFilter=0;
+    of.nFilterIndex=1;
+    of.lpstrFile=(LPWSTR)filename; of.nMaxFile=MAX_PATH;
+    of.lpstrFileTitle=NULL; of.nMaxFileTitle=0;
+    of.lpstrInitialDir=NULL;
+    of.Flags=OFN_PATHMUSTEXIST|OFN_OVERWRITEPROMPT|OFN_HIDEREADONLY;
 
     switch( message )
     {
@@ -150,6 +201,64 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 			return 0;											
 		}
 
+		case WM_COMMAND:
+		{
+			if (wParam == 1)
+            {
+				if (!GetOpenFileName(&of)) return 0;
+				hf=CreateFile((LPWSTR)filename,GENERIC_READ,0,NULL,OPEN_EXISTING,0,NULL);
+
+				if (hf==INVALID_HANDLE_VALUE) {
+				 MessageBox(hWnd,L"Open failed", L"Error",MB_ICONHAND|MB_OK);
+				 break;
+				}
+				len=GetFileSize(hf,NULL);
+				buf=(wchar_t*)malloc(len+1);
+				if (!buf) {
+				 MessageBox(hWnd,L"Mem allocation failed",L"Error",MB_ICONHAND|MB_OK);
+				 break;
+				}
+				wcscpy(filename1, filename);
+				FileName(filename1);
+				isLoaded1 = true;
+				CloseHandle(hf);
+				free(buf);
+				return 0;
+            }
+
+			if (wParam == 2)
+             {
+               if (!GetOpenFileName(&of)) return 0;
+			   hf=CreateFile((LPWSTR)filename,GENERIC_READ,0,NULL,OPEN_EXISTING,0,NULL);
+
+				if (hf==INVALID_HANDLE_VALUE) 
+				{
+				 MessageBox(hWnd,L"Open failed", L"Error",MB_ICONHAND|MB_OK);
+				 break;
+				}
+				len=GetFileSize(hf,NULL);
+				buf=(wchar_t*)malloc(len+1);
+				if (!buf) {
+				 MessageBox(hWnd,L"Mem allocation failed",L"Error",MB_ICONHAND|MB_OK);
+				 break;
+				}
+				wcscpy(filename2, filename);
+				FileName(filename2);
+				isLoaded2 = true;
+				CloseHandle(hf);
+				free(buf);
+				return 0;
+             }
+			
+			if (wParam == 3)
+             {
+               MessageBox(hWnd,
+				   L"Controls:\n\n* Rotattion of the scene: Arrows <Left>, <Right>, <Up>, <Down>.\n* Type of view: Button <W> - Wireframe, Button <S> - Solid.",
+				   L"Help: Controls Information",MB_OK|MB_ICONINFORMATION);
+			   return 0;
+             }
+		}
+
         default:
             return DefWindowProc( hWnd, message, wParam, lParam );
     }
@@ -161,6 +270,22 @@ LRESULT CALLBACK WndProc2( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 {
     PAINTSTRUCT ps;
     HDC hdc;
+
+	OPENFILENAME of;
+	wchar_t* buf;
+	HANDLE hf;
+	DWORD len,len1;
+
+	ZeroMemory(&of, sizeof(OPENFILENAME));
+	of.lStructSize=OPENFILENAME_SIZE_VERSION_400A;
+    of.hwndOwner=hWnd;
+    of.lpstrFilter=L".obj Files (*.obj)\0*.obj\0";
+    of.lpstrCustomFilter=NULL; of.nMaxCustFilter=0;
+    of.nFilterIndex=1;
+    of.lpstrFile=(LPWSTR)filename; of.nMaxFile=MAX_PATH;
+    of.lpstrFileTitle=NULL; of.nMaxFileTitle=0;
+    of.lpstrInitialDir=NULL;
+    of.Flags=OFN_PATHMUSTEXIST|OFN_OVERWRITEPROMPT|OFN_HIDEREADONLY;
 
     switch( message )
     {
@@ -185,6 +310,64 @@ LRESULT CALLBACK WndProc2( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 			return 0;											
 		}
 
+		case WM_COMMAND:
+		{
+			if (wParam == 1)
+            {
+				if (!GetOpenFileName(&of)) return 0;
+				hf=CreateFile((LPWSTR)filename,GENERIC_READ,0,NULL,OPEN_EXISTING,0,NULL);
+
+				if (hf==INVALID_HANDLE_VALUE) {
+				 MessageBox(hWnd,L"Open failed", L"Error",MB_ICONHAND|MB_OK);
+				 break;
+				}
+				len=GetFileSize(hf,NULL);
+				buf=(wchar_t*)malloc(len+1);
+				if (!buf) {
+				 MessageBox(hWnd,L"Mem allocation failed",L"Error",MB_ICONHAND|MB_OK);
+				 break;
+				}
+				wcscpy(filename1, filename);
+				FileName(filename1);
+				isLoaded1 = true;
+				CloseHandle(hf);
+				free(buf);
+				return 0;
+            }
+
+			if (wParam == 2)
+             {
+               if (!GetOpenFileName(&of)) return 0;
+			   hf=CreateFile((LPWSTR)filename,GENERIC_READ,0,NULL,OPEN_EXISTING,0,NULL);
+
+				if (hf==INVALID_HANDLE_VALUE) 
+				{
+				 MessageBox(hWnd,L"Open failed", L"Error",MB_ICONHAND|MB_OK);
+				 break;
+				}
+				len=GetFileSize(hf,NULL);
+				buf=(wchar_t*)malloc(len+1);
+				if (!buf) {
+				 MessageBox(hWnd,L"Mem allocation failed",L"Error",MB_ICONHAND|MB_OK);
+				 break;
+				}
+				wcscpy(filename2, filename);
+				FileName(filename2);
+				isLoaded2 = true;
+				CloseHandle(hf);
+				free(buf);
+				return 0;
+             }
+			
+			if (wParam == 3)
+             {
+               MessageBox(hWnd,
+				   L"Controls:\n\n* Rotattion of the scene: Arrows <Left>, <Right>, <Up>, <Down>.\n* Type of view: Button <W> - Wireframe, Button <S> - Solid.",
+				   L"Help: Controls Information",MB_OK|MB_ICONINFORMATION);
+			   return 0;
+             }
+		}
+
         default:
             return DefWindowProc( hWnd, message, wParam, lParam );
     }
@@ -193,7 +376,7 @@ LRESULT CALLBACK WndProc2( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 }
 
 //OpenGL Compatible Context Initialization
-HRESULT InitCompatibleContext()
+HRESULT CompatContextInit()
 {
 	int iMajorVersion=0;
 	int iMinorVersion=0;
@@ -235,7 +418,7 @@ HRESULT InitCompatibleContext()
 }
 
 //OpenGL Main context Initialization
-HRESULT InitContext()
+HRESULT ContextInit()
 {
 	int iMajorVersion=4;
 	int iMinorVersion=0;
@@ -296,23 +479,22 @@ HRESULT InitContext()
 }
 
 //Shaders setting
-CShader shVertex, shFragment; 
-CShaderProgram spMain; 
+ShaderClass SVertex, SFragment; 
+ShaderProgClass SProg; 
 
 //Geometry Initialization
-void InitGeometry() 
+void GeometrySet() 
 { 
-
    // Load shaders and create shader program
-   shVertex.loadShader("data\\shaders\\shader.vert", GL_VERTEX_SHADER); 
-   shFragment.loadShader("data\\shaders\\shader.frag", GL_FRAGMENT_SHADER); 
+   SVertex.loadShader("data\\shaders\\shader.vert", GL_VERTEX_SHADER); 
+   SFragment.loadShader("data\\shaders\\shader.frag", GL_FRAGMENT_SHADER); 
 
-   spMain.createProgram(); 
-   spMain.addShaderToProgram(&shVertex); 
-   spMain.addShaderToProgram(&shFragment); 
+   SProg.createProgram(); 
+   SProg.addShaderToProgram(&SVertex); 
+   SProg.addShaderToProgram(&SFragment); 
 
-   spMain.linkProgram(); 
-   spMain.useProgram(); 
+   SProg.linkProgram(); 
+   SProg.useProgram(); 
 
    wglSwapIntervalEXT(1);
 
@@ -321,11 +503,38 @@ void InitGeometry()
    glClearDepth(1.0f);
 
    //Loading Mesh Objects
-    Mesh=new MeshFromObj("frame1.obj", "frame2.obj");
+    Mesh=new MeshFromObj(filename1, filename2);
+}
 
-}   
+void FileName(wchar_t * fname)
+{
+	wchar_t temp[MAX_PATH];
+	int i = 0, j = 0;
+	
+	while (fname[j])
+	{
+		if (fname[j] == L'\\')
+		{
+			temp[i] = fname[j];
+			i++;
+			temp[i] = L'\\';
+			i++;
+			j++;
+		}
+		else 
+		{
+			temp[i] = fname[j];
+			i++;
+			j++;
+		}
+	}
+	temp[i] = L'\0';
+	wcscpy(fname, temp);
+}
 
-float orbit=0.0f;
+float phi = 2.1199985f;
+float theta = 0.0f;
+float orbit = 0.0f;
 float dtime = 0.0f;
 float ptime = 0.002f;
 
@@ -341,10 +550,45 @@ void Render()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-    //Camera rotation orbit radius
-	float radius=6.0f;	orbit+=dorbit;
+    //Camera rotation Actions
+	theta = 0.0f;
 
-    glm::vec3   Eye( sin(orbit)*radius, 1.0f, cos(orbit)*radius );
+    float offset = 0.0f;
+
+	float radius=6.0f;	
+    float pi= 3.141593f;
+    phi += dorbit;
+    theta += dorbit1;
+
+    theta += pi / 2;
+
+    int quarter = (int)(theta / pi);
+    int quarterTotal = quarter % 2;
+    if (quarterTotal == 0)  //  pare quarter
+    {
+
+    }
+    else        //  non pare quarter
+    {
+        offset = pi;
+    }
+
+    orbit = phi + offset;
+
+    theta -= pi / 2;
+    if (quarterTotal == 0)
+    {
+
+    }
+    else
+    {
+        theta = pi - theta;
+    }
+
+    float thetaF = pi*0.5f-theta;
+    float radius1 = radius*sin(thetaF); 
+    glm::vec3   Eye( cos(orbit)*radius1, radius*cos(thetaF), sin(orbit)*radius1 );
+    glm::vec3   Up(sin(orbit)*cos(thetaF), sin(thetaF), cos(orbit)*cos(thetaF));
 
 	//Setting matrices for Camera
 	glm::mat4	mWorld;
@@ -363,14 +607,14 @@ void Render()
 	}
 
 	mWorld=		glm::translate(0,0,0);
-	mView=		glm::lookAt(Eye,glm::vec3(0,0,0),glm::vec3(0.0f,1.0f,0.0f));
+	mView=		glm::lookAt(Eye,glm::vec3(0,0,0),Up);
 	mProjection=glm::perspectiveFov(90.0f,533.0f,400.0f,0.001f,1000.0f);
 
 	//Matrices shader constants
-	int iWorld=	glGetUniformLocation(spMain.getProgramID(),"mWorld");
-	int iView=	glGetUniformLocation(spMain.getProgramID(),"mView");
-	int iProjection=	glGetUniformLocation(spMain.getProgramID(),"mProjection");
-	int iTime =	glGetUniformLocation(spMain.getProgramID(),"time");
+	int iWorld=	glGetUniformLocation(SProg.getProgramID(),"mWorld");
+	int iView=	glGetUniformLocation(SProg.getProgramID(),"mView");
+	int iProjection=	glGetUniformLocation(SProg.getProgramID(),"mProjection");
+	int iTime =	glGetUniformLocation(SProg.getProgramID(),"time");
 
 	glUniformMatrix4fv(iWorld,1,GL_FALSE,glm::value_ptr(mWorld));
 	glUniformMatrix4fv(iView,1,GL_FALSE,glm::value_ptr(mView));
@@ -378,7 +622,7 @@ void Render()
 	glUniform1f(iTime, dtime);
 
 	// Renderer
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
 	mWorld=		glm::translate(0.0f,0.0f,0.0f);
 	glUniformMatrix4fv(iWorld,1,GL_FALSE,glm::value_ptr(mWorld));
 
@@ -387,14 +631,14 @@ void Render()
 	SwapBuffers(hDC);
 }
 
-//Cleaning Up
-void CleanupContext()
+//Cleaning the Context
+void ContextClean()
 {
 	if (Mesh!=NULL) delete Mesh;
 	
-	spMain.deleteProgram();
-	shVertex.deleteShader();
-	shFragment.deleteShader();
+	SProg.deleteProgram();
+	SVertex.deleteShader();
+	SFragment.deleteShader();
 
 
 	HDC hDC = GetDC(g_hWnd);
